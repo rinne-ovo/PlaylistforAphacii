@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阿法欺的歌单</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #2D2A2F 0%, #4E494F 50%, #3A363B 100%);
+            color: #DCCCEA;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-bottom: 20px;
+        }
+        
+        header {
+            background-color: rgba(78, 73, 79, 0.9);
+            color: #DCCCEA;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #6B5E72;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #DCCCEA;
+            text-shadow: 0 0 8px rgba(220, 204, 234, 0.4);
+        }
+        
+        .logo span {
+            color: #C75F80;
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 10px;
+            width: 60%;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            border: 1px solid #6B5E72;
+            border-radius: 25px;
+            font-size: 1rem;
+            background-color: rgba(78, 73, 79, 0.7);
+            color: #DCCCEA;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            background-color: rgba(78, 73, 79, 0.9);
+            box-shadow: 0 0 0 2px rgba(199, 95, 128, 0.5);
+            border-color: #C75F80;
+        }
+        
+        .search-input::placeholder {
+            color: #9D8FA8;
+        }
+        
+        .random-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #C75F80, #B34A6E);
+            color: #FFFFFF;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .random-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(199, 95, 128, 0.5);
+        }
+        
+        .random-btn:active {
+            transform: translateY(0);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        
+        .playlist-table-container {
+            background-color: rgba(78, 73, 79, 0.8);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            border: 1px solid #6B5E72;
+        }
+        
+        .playlist-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        
+        .playlist-table th, .playlist-table td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid #6B5E72;
+        }
+        
+        .playlist-table th {
+            background: linear-gradient(to bottom, rgba(199, 95, 128, 0.3), rgba(199, 95, 128, 0.2));
+            font-weight: bold;
+            color: #DCCCEA;
+            font-size: 1.1rem;
+            position: sticky;
+            top: 0;
+        }
+        
+        .playlist-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .playlist-table tr:hover {
+            background-color: rgba(199, 95, 128, 0.1);
+        }
+        
+        .song-name {
+            color: #DCCCEA;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            display: inline-block;
+            padding: 4px 0;
+        }
+        
+        .song-name:hover {
+            color: #FFFFFF;
+            transform: translateX(5px);
+            text-shadow: 0 0 5px rgba(220, 204, 234, 0.7);
+        }
+        
+        .accompaniment-link {
+            color: #C75F80;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            background-color: rgba(199, 95, 128, 0.15);
+            transition: all 0.3s ease;
+            display: inline-block;
+            font-weight: 500;
+            border: 1px solid rgba(199, 95, 128, 0.3);
+        }
+        
+        .accompaniment-link:hover {
+            background-color: rgba(199, 95, 128, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(199, 95, 128, 0.3);
+        }
+        
+        .accompaniment-link.disabled {
+            color: #8A7D93;
+            cursor: not-allowed;
+            background-color: rgba(107, 94, 114, 0.2);
+            border: 1px solid rgba(107, 94, 114, 0.3);
+        }
+        
+        .accompaniment-link.disabled:hover {
+            background-color: rgba(107, 94, 114, 0.2);
+            transform: none;
+            box-shadow: none;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(78, 73, 79, 0.8);
+            color: #DCCCEA;
+            margin-top: 2rem;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid #6B5E72;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(199, 95, 128, 0.95);
+            color: #FFFFFF;
+            padding: 20px 40px;
+            border-radius: 10px;
+            display: none;
+            z-index: 1000;
+            animation: fadeInOut 2s ease-in-out;
+            text-align: center;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(199, 95, 128, 0.4);
+            font-weight: bold;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -40px); }
+            10% { opacity: 1; transform: translate(-50%, -50%); }
+            90% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -40px); }
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #9D8FA8;
+            display: none;
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 1rem;
+            }
+            
+            .search-container {
+                width: 100%;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">阿法欺<span>的歌单</span></div>
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="搜索歌曲名称、译名或歌手...">
+            <button class="random-btn" id="randomBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
+                    <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
+                </svg>
+                随机
+            </button>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="playlist-table-container">
+            <table class="playlist-table">
+                <thead>
+                    <tr>
+                        <th>歌曲名称</th>
+                        <th>歌曲译名</th>
+                        <th>歌手</th>
+                        <th>伴奏链接</th>
+                    </tr>
+                </thead>
+                <tbody id="playlistBody">
+                    <!-- 歌曲数据将通过JavaScript动态生成 -->
+                </tbody>
+            </table>
+        </div>
+        <div class="no-results" id="noResults">没有找到匹配的歌曲</div>
+    </div>
+    
+    <div class="notification" id="notification">已复制"点歌 [歌名]"到剪贴板</div>
+    
+    <footer>
+        <p>&copy; 2025 阿法欺的歌单. 保留所有权利.</p>
+    </footer>
+    
+    <script>
+        // 歌曲数据
+        const songsData = [
+            { name: "私は最強 (ウタ from ONE PIECE FILM RED)", translatedName: "我是最强的", artist: "Ado", accompanimentLink: "" },
+            { name: "再会 (VOCALOID ver)", translatedName: "", artist: "はるまきごはん / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1NK4y1X7D1/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "言って。", translatedName: "说吧。", artist: "ヨルシカ", accompanimentLink: "https://www.bilibili.com/video/BV1SE411h7Vj/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "白日", translatedName: "", artist: "King Gnu", accompanimentLink: "https://www.bilibili.com/video/BV1HisMemEnv?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "マトリョシカ", translatedName: "俄罗斯套娃", artist: "米津玄師 / 初音ミク / GUMI", accompanimentLink: "https://www.bilibili.com/video/BV1qt411Y73U?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "Scream 〜万魔殿パンデモニウム：煉獄編〜", translatedName: "", artist: "祖堅正慶 / AKINO", accompanimentLink: "" },
+            { name: "赤伶", translatedName: "", artist: "谭晶", accompanimentLink: "https://www.bilibili.com/video/BV1PA411N7C2/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "寄り酔い", translatedName: "倚醉", artist: "和ぬか", accompanimentLink: "https://www.bilibili.com/video/BV1DK4y1A7Ti/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "紅蓮華", translatedName: "", artist: "LiSA", accompanimentLink: "https://www.bilibili.com/video/BV1AE411R7Wu/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "flos", translatedName: "花", artist: "初音ミク / R Sound Design", accompanimentLink: "https://www.bilibili.com/video/BV1qt411h7rK/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "フィクサー", translatedName: "Fixer", artist: "v flower / ぬゆり", accompanimentLink: "https://www.bilibili.com/video/BV1Sw411Z7DH/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "シニカルナイトプラン", translatedName: "Cynical night plan", artist: "Ayase / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1i741117EK?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "少女レイ", translatedName: "少女Rei", artist: "みきとP / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1Fu411f7U5/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "カタオモイ", translatedName: "单相思", artist: "Aimer", accompanimentLink: "https://www.bilibili.com/video/BV1Df4y1r7ie/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "テレキャスタービーボーイ", translatedName: "电吉他摇滚男孩", artist: "すりぃ / 鏡音レン", accompanimentLink: "" },
+            { name: "星愿StarWish", translatedName: "", artist: "星尘 / 平行四界Quadimension", accompanimentLink: "" },
+            { name: "げのげ feat.ロス", translatedName: "最烂", artist: "なきそ / ロス", accompanimentLink: "https://www.bilibili.com/video/BV15V4y1L7Fz/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "命の天秤 ～輝ける神域 アグライア～", translatedName: "", artist: "祖堅正慶", accompanimentLink: "" },
+            { name: "キツネノマド (Queen Fox)", translatedName: "狐狸之窗", artist: "Raon", accompanimentLink: "https://www.bilibili.com/video/BV1W34y187Uf/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "ラヴィ", translatedName: "Lavie", artist: "", accompanimentLink: "https://www.bilibili.com/video/BV1mK411o7rw/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "ブリキノダンス", translatedName: "马口铁之舞", artist: "Ado", accompanimentLink: "https://www.bilibili.com/video/BV1ss411B7uW/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "天ノ弱", translatedName: "天之弱", artist: "164 / GUMI", accompanimentLink: "https://www.bilibili.com/video/BV12s411z7Po/?spm_id_from=333.1387.list.card_archive.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "幽霊東京", translatedName: "幽灵东京", artist: "Ayase / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1rV411J7TA/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "ダーリンダンス", translatedName: "Darling Dance", artist: "かいりきベア / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1gv41117ai/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "シネマ", translatedName: "电影", artist: "Ayase", accompanimentLink: "https://www.bilibili.com/video/BV1V64y1R785?spm_id_from=333.788.recommend_more_video.2&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "怪物", translatedName: "", artist: "YASOBI", accompanimentLink: "https://www.bilibili.com/video/BV1oo4y157fv?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=8" },
+            { name: "オノマトペ", translatedName: "拟声词", artist: "羽生まゐご / りりあ。", accompanimentLink: "https://www.bilibili.com/video/BV14341117jC/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "最近カレ死が冷たいの (feat. 初音ミク)", translatedName: "最近死男友很冷淡喔", artist: "みつあくま / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1w14y1g7Bc/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "からくりピエロ", translatedName: "活动小丑", artist: "40mP / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV13b411N7kN?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "恋愛裁判", translatedName: "恋爱审判", artist: "40mP / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV13t411i74E?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "ロミオとシンデレラ", translatedName: "罗密欧与灰姑娘", artist: "doriko / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1Bb411N7gL?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "偏食", translatedName: "", artist: "香椎モイミ / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1mT4y1G7dU?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "KICK BACK", translatedName: "", artist: "米津玄師", accompanimentLink: "https://www.bilibili.com/video/BV1CP411i7zp/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "レクイエム (feat. 星街すいせい)", translatedName: "镇魂曲", artist: "kanaria / 星街すいせい", accompanimentLink: "https://www.bilibili.com/video/BV1Ms4y1N7aR/?spm_id_from=333.1387.0.0&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "アイドル", translatedName: "偶像", artist: "YOASOBI", accompanimentLink: "https://www.bilibili.com/video/BV1Pv4y1E7Bp/?spm_id_from=333.788.recommend_more_video.0&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "新時代 (ウタ from ONE PIECE FILM RED)", translatedName: "新时代", artist: "Ado", accompanimentLink: "https://www.bilibili.com/video/BV1VY411T7VW/?spm_id_from=333.1387.search.video_card.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "ビビデバ", translatedName: "星彗闪耀", artist: "星街すいせい", accompanimentLink: "https://www.bilibili.com/video/BV1CM4m1R752/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "ルル", translatedName: "规则", artist: "Ado", accompanimentLink: "https://www.bilibili.com/video/BV1zZiuerEPW/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "金木犀の夜", translatedName: "金木犀的夜", artist: "きのこ帝国", accompanimentLink: "https://www.bilibili.com/video/BV14dBnY6Eue/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "Mira", translatedName: "看", artist: "Ivana Santacruz", accompanimentLink: "" },
+            { name: "Gimme×Gimme", translatedName: "", artist: "P*Light / Giga / 初音ミク / 鏡音リン", accompanimentLink: "https://www.bilibili.com/video/BV1SQ4y1d71d/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "レディメイド", translatedName: "观念艺术", artist: "Ado", accompanimentLink: "https://www.bilibili.com/video/BV12A411W7by/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "夜になったら耿十八は", translatedName: "", artist: "Peg / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1714y1J7Qe/?spm_id_from=333.337.search-card.all.click" },
+            { name: "ミカヅキ", translatedName: "新月", artist: "さユり", accompanimentLink: "https://www.bilibili.com/video/BV1dFmtYYER3/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "東京テディベア", translatedName: "东京泰迪熊", artist: "Neru / 鏡音リン", accompanimentLink: "https://www.bilibili.com/video/BV11w411t7du?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "ロキ", translatedName: "ROKI", artist: "鏡音リン / みきとP", accompanimentLink: "https://www.bilibili.com/video/BV12W411s71w?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "KILLER B", translatedName: "", artist: "巡音ルカ / 初音ミク / GUMI / IA / 鏡音リン / 梅とら", accompanimentLink: "https://www.bilibili.com/video/BV16h411q7Wx/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "乙女解剖", translatedName: "少女解剖", artist: "DECO*27 / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1dh4y1R7NS/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "神っぽいな", translatedName: "像神一样呐", artist: "ピノキオピー / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1JL411x7CM?spm_id_from=333.788.recommend_more_video.5&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "劣等上等", translatedName: "", artist: "Giga / 鏡音リン / 鏡音レン", accompanimentLink: "https://www.bilibili.com/video/BV1Cs411J7h3?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=3" },
+            { name: "絶え間なく藍色 (feat. 東雲彰人&青柳冬弥&KAITO)", translatedName: "无尽的蓝色", artist: "Vivid BAD SQUAD", accompanimentLink: "https://www.bilibili.com/video/BV1LE411Y7zG?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "初恋日記 feat.音街ウナ", translatedName: "", artist: "香椎モイミ / 音街ウナ", accompanimentLink: "https://www.bilibili.com/video/BV1EW4y1q7Ky/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "不埒な喝采", translatedName: "不羁的喝彩", artist: "可不 / ポリスピカデリー", accompanimentLink: "https://www.bilibili.com/video/BV1ey4y1g78G/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "爆笑", translatedName: "", artist: "syudou", accompanimentLink: "https://www.bilibili.com/video/BV1VL411s7TL/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "ルマ", translatedName: "Ruma", artist: "かいりきベア / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1RJ411Q7mT/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "妄想感傷代償連盟", translatedName: "妄想感伤代偿联盟", artist: "DECO*27 / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1Rs411W7it?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "ルシファー (selfcover)", translatedName: "路西法", artist: "¿?shimon", accompanimentLink: "https://www.bilibili.com/video/BV1e8411s7m8/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "ボッカデラベリタ", translatedName: "真理之口", artist: "柊キライ / v flower", accompanimentLink: "https://www.bilibili.com/video/BV195411G7Ho/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "フォニイ", translatedName: "伪物", artist: "可不 / ツミキ", accompanimentLink: "https://www.bilibili.com/video/BV1b94y1D73D?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "ノロ", translatedName: "诅咒", artist: "¿?shimon", accompanimentLink: "https://www.bilibili.com/video/BV1W34y1S7VH?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "ド屑", translatedName: "渣滓", artist: "なきそ / 歌愛ユキ", accompanimentLink: "https://www.bilibili.com/video/BV1hY4y1V7FP/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "シンデレラ (Giga First Night Remix)", translatedName: "灰姑娘", artist: "DECO*27 / Giga / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1ed4y187sJ/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "キャットラビング", translatedName: "猫耳摩擦", artist: "香椎モイミ / 可不", accompanimentLink: "https://www.bilibili.com/video/BV1moqxYnE7o?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=3" },
+            { name: "うっせぇわ", translatedName: "烦死了", artist: "Ado", accompanimentLink: "https://www.bilibili.com/video/BV19y4y1673X/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "ヴァンパイア", translatedName: "吸血鬼", artist: "DECO*27 / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1gX4y1a7HC/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "CH4NGE (feat. 可不)", translatedName: "", artist: "Giga / 可不", accompanimentLink: "https://www.bilibili.com/video/BV14R4y1W7US/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "踊", translatedName: "舞", artist: "Ado", accompanimentLink: "https://www.bilibili.com/video/BV1of4y1p72a?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "シャルル (feat. 東雲絵名 & 暁山瑞希)", translatedName: "", artist: "須田景凪 / 25時、ナイトコードで。", accompanimentLink: "https://www.bilibili.com/video/BV1Tt411d7mt?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "夜に駆ける", translatedName: "向夜晚奔去", artist: "YOASOBI", accompanimentLink: "https://www.bilibili.com/video/BV1oo4y157fv/?spm_id_from=333.1387.upload.video_card.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "群青", translatedName: "", artist: "YOASOBI", accompanimentLink: "https://www.bilibili.com/video/BV1oo4y157fv?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=5" },
+            { name: "ギラギラ", translatedName: "光辉炫目", artist: "Ado", accompanimentLink: "https://www.bilibili.com/video/BV1hv41177JA/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "summertime", translatedName: "", artist: "cinnamons / evening cinema", accompanimentLink: "https://www.bilibili.com/video/BV1E54y1t74x/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "海の幽霊", translatedName: "海之幽灵", artist: "米津玄師", accompanimentLink: "" },
+            { name: "残響散歌", translatedName: "", artist: "Aimer", accompanimentLink: "https://www.bilibili.com/video/BV1mZ421h7fm/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "偽物人間40号 (self cover)", translatedName: "", artist: "¿?shimon", accompanimentLink: "https://www.bilibili.com/video/BV1JK4y1g7eC?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "深昏睡", translatedName: "", artist: "春野 / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV15q4y1x7rE/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "初めての恋が終わる時", translatedName: "", artist: "ChouCho", accompanimentLink: "https://www.bilibili.com/video/BV1UN411o7VE/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "マインドブランド", translatedName: "Mind Brand", artist: "MARETU / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1qt411i7AF?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "フラジール", translatedName: "Fragile", artist: "GUMI / ぬゆり", accompanimentLink: "https://www.bilibili.com/video/BV16t411o7VE/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "エリカの憂い - ヰ世界情緒 feat. 星界", translatedName: "埃里卡的哀愁", artist: "ヰ世界情緒 / 星界", accompanimentLink: "https://www.bilibili.com/video/BV1D94y1v77m/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "Ready Steady", translatedName: "", artist: "Giga / 初音ミク / 鏡音リン / 鏡音レン / q*Left", accompanimentLink: "https://www.bilibili.com/video/BV1N541177GX/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "NIGHT DANCER", translatedName: "", artist: "imase", accompanimentLink: "" },
+            { name: "VORACITY", translatedName: "", artist: "MYTH & ROID", accompanimentLink: "" },
+            { name: "妄想税", translatedName: "", artist: "DECO*27 / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1Ms411d7or/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "唱", translatedName: "", artist: "Ado", accompanimentLink: "https://www.bilibili.com/video/BV1z8411i7Ph?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "秒針を噛む", translatedName: "咬住秒针", artist: "ずっと真夜中でいいのに。", accompanimentLink: "https://www.bilibili.com/video/BV14v4y1E7Ye/?vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "季節は次々死んでいく", translatedName: "季节接连逝去", artist: "amazarashi", accompanimentLink: "https://www.bilibili.com/video/BV1FY411s7aZ/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "ラグトレイン", translatedName: "延误列车", artist: "稲葉曇 / 歌愛ユキ", accompanimentLink: "https://www.bilibili.com/video/BV1U54y1t7k6/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "ビースト・ダンス", translatedName: "", artist: "音街ウナ / 和田たけあき", accompanimentLink: "" },
+            { name: "聖少女領域", translatedName: "圣少女领域", artist: "ALI PROJECT", accompanimentLink: "https://www.bilibili.com/video/BV1oM411J7JU/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "酔いどれ知らず", translatedName: "", artist: "kanaria / GUMI", accompanimentLink: "https://www.bilibili.com/video/BV1yL4y1c7SW/?spm_id_from=333.337.search-card.all.click" },
+            { name: "无重力少女", translatedName: "", artist: "希望索任合资 / 雨狸 / 墨清弦", accompanimentLink: "" },
+            { name: "神のまにまに", translatedName: "神的随波逐流", artist: "初音ミク / 鏡音リン / GUMI / れるりり", accompanimentLink: "https://www.bilibili.com/video/BV1Vs411M7hB?spm_id_from=333.788.videopod.episodes&vd_source=3e1817f52f3e73f6a35beabe10815615&p=2" },
+            { name: "天天天国地獄国", translatedName: "", artist: "Aiobahn +81 / ななひら / P丸様。", accompanimentLink: "https://www.bilibili.com/video/BV17YNGeqEjd?vd_source=3e1817f52f3e73f6a35beabe10815615&p=2&spm_id_from=333.788.videopod.episodes" },
+            { name: "我的悲伤是水做的", translatedName: "", artist: "ChiliChill / 洛天依Official", accompanimentLink: "https://www.bilibili.com/video/BV1RY411T75u/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "メルト", translatedName: "", artist: "supercell / 初音ミク", accompanimentLink: "https://www.bilibili.com/video/BV1ht411i7NH?vd_source=3e1817f52f3e73f6a35beabe10815615&p=2&spm_id_from=333.788.videopod.episodes" },
+            { name: "恋風邪にのせて", translatedName: "", artist: "Vaundy", accompanimentLink: "https://www.bilibili.com/video/BV19D4y1Y7po/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "恋愛サーキュレーション", translatedName: "恋爱循环", artist: "花澤香菜", accompanimentLink: "https://www.bilibili.com/video/BV1F6iUYqE1a/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" },
+            { name: "星雨之夜", translatedName: "", artist: "心华/ilem", accompanimentLink: "" },
+            { name: "一人行者", translatedName: "", artist: "心华/ilem", accompanimentLink: "" },
+            { name: "勾指起誓", translatedName: "", artist: "洛天依/ilem", accompanimentLink: "" },
+            { name: "僕が死のうと思ったのは", translatedName: "", artist: "中岛美嘉", accompanimentLink: "https://www.bilibili.com/video/BV1XZSHY7Ez4/?share_source=copy_web&vd_source=9a9c4446736078022b84a06b5d96638f" },
+            { name: "向日葵", translatedName: "", artist: "ado", accompanimentLink: "" },
+            { name: "炉心融解", translatedName: "", artist: "鏡音リン/Iroha", accompanimentLink: "https://www.bilibili.com/video/BV1Qs41117Pj/?spm_id_from=333.337.search-card.all.click&vd_source=3e1817f52f3e73f6a35beabe10815615" }
+        ];
+
+        // 获取DOM元素
+        const searchInput = document.getElementById('searchInput');
+        const randomBtn = document.getElementById('randomBtn');
+        const playlistBody = document.getElementById('playlistBody');
+        const notification = document.getElementById('notification');
+        const noResults = document.getElementById('noResults');
+
+        // 初始化歌曲列表
+        function initializePlaylist() {
+            playlistBody.innerHTML = '';
+            
+            songsData.forEach(song => {
+                const row = document.createElement('tr');
+                
+                // 歌曲名称单元格
+                const nameCell = document.createElement('td');
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = song.name;
+                nameSpan.className = 'song-name';
+                nameCell.appendChild(nameSpan);
+                
+                // 歌曲译名单元格
+                const translatedNameCell = document.createElement('td');
+                translatedNameCell.textContent = song.translatedName || '-';
+                
+                // 歌手单元格
+                const artistCell = document.createElement('td');
+                artistCell.textContent = song.artist;
+                
+                // 伴奏链接单元格
+                const accompanimentCell = document.createElement('td');
+                const accompanimentLink = document.createElement('a');
+                
+                if (song.accompanimentLink) {
+                    accompanimentLink.href = song.accompanimentLink;
+                    accompanimentLink.target = '_blank';
+                    accompanimentLink.rel = 'noopener noreferrer';
+                    accompanimentLink.textContent = '点击跳转';
+                    accompanimentLink.className = 'accompaniment-link';
+                } else {
+                    accompanimentLink.textContent = '无链接';
+                    accompanimentLink.className = 'accompaniment-link disabled';
+                    accompanimentLink.href = 'javascript:void(0);';
+                    accompanimentLink.onclick = (e) => e.preventDefault();
+                }
+                
+                accompanimentCell.appendChild(accompanimentLink);
+                
+                // 添加所有单元格到行
+                row.appendChild(nameCell);
+                row.appendChild(translatedNameCell);
+                row.appendChild(artistCell);
+                row.appendChild(accompanimentCell);
+                
+                // 添加行到表格
+                playlistBody.appendChild(row);
+            });
+            
+            // 添加点击事件到歌曲名称
+            document.querySelectorAll('.song-name').forEach((element, index) => {
+                element.addEventListener('click', () => {
+                    const songName = songsData[index].name;
+                    copyToClipboard(`点歌 ${songName}`);
+                    showNotification(songName);
+                });
+            });
+        }
+
+        // 实时搜索筛选功能
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            let hasResults = false;
+            
+            document.querySelectorAll('#playlistBody tr').forEach((row, index) => {
+                const song = songsData[index];
+                const matches = song.name.toLowerCase().includes(searchTerm) || 
+                              (song.translatedName && song.translatedName.toLowerCase().includes(searchTerm)) ||
+                              song.artist.toLowerCase().includes(searchTerm);
+                
+                row.style.display = matches ? '' : 'none';
+                if (matches) {
+                    hasResults = true;
+                }
+            });
+            
+            noResults.style.display = hasResults ? 'none' : 'block';
+        });
+        
+        // 随机功能
+        randomBtn.addEventListener('click', () => {
+            if (songsData.length === 0) {
+                alert('歌单中没有歌曲');
+                return;
+            }
+            
+            // 在所有歌曲中随机选择
+            const randomIndex = Math.floor(Math.random() * songsData.length);
+            const randomSong = songsData[randomIndex].name;
+            
+            // 更新搜索框但不触发筛选
+            searchInput.value = randomSong;
+            
+            copyToClipboard(`点歌 ${randomSong}`);
+            showNotification(randomSong);
+        });
+        
+        // 复制到剪贴板函数
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                console.log('复制成功:', text);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                // 备用方法
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            });
+        }
+        
+        // 显示通知
+        function showNotification(songName) {
+            notification.textContent = `已复制"点歌 ${songName}"到剪贴板`;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 2000);
+        }
+        
+        // 初始化页面
+        initializePlaylist();
+    </script>
+</body>
+</html>
